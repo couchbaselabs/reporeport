@@ -7,3 +7,6 @@
 [submodule "mobile-testkit"]
 	path = mobile-testkit
 	url = https://github.com/couchbaselabs/mobile-testkit
+[submodule "sequoia"]
+	path = sequoia
+	url = https://github.com/couchbaselabs/sequoia
