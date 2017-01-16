@@ -107,41 +107,6 @@ class TestRepoManager(object):
             rows.append(row)
         return rows
 
-    def get_mobile_tests(self):
-        """
-        parse the mobile conf file for tests
-        """
-
-        rows = []
-        tests = {}
-        filename = CG.generate_mobile_conf()
-        if os.path.exists(filename):
-            mobile_conf_file = file(filename)
-            for line in mobile_conf_file:
-                parts = line.split(":")
-                component = parts[0]
-                test_name = parts[1]
-                sub_component = "mobile"
-
-                if component in tests:
-                    tests[component][sub_component].append(test_name)
-                else:
-                    tests[component] = {}
-                    tests[component][sub_component] = [test_name]
-
-        # combine tests by components[subcomponent]
-        for component in tests:
-            for sub_component in tests[component]:
-                val = tests[component][sub_component]
-                conf = "%s_%s.conf" % (component, sub_component)
-                rows.append({
-                    'confFile': conf,
-                    'component': component,
-                    'subcomponent': sub_component,
-                    'tests': val,
-                    'type': 'mobile'})
-        return rows
-
     def get_perfomance_tests(self):
         """
         walk the perfrunner directory and retrieve tests files
@@ -180,6 +145,41 @@ class TestRepoManager(object):
                     'subcomponent': sub_component,
                     'tests': val,
                     'type': 'performance'})
+        return rows
+
+    def get_mobile_tests(self):
+        """
+        parse the mobile conf file for tests
+        """
+
+        rows = []
+        tests = {}
+        filename = CG.generate_mobile_conf()
+        if os.path.exists(filename):
+            mobile_conf_file = file(filename)
+            for line in mobile_conf_file:
+                parts = line.split(":")
+                component = parts[0]
+                test_name = parts[1]
+                sub_component = "mobile"
+
+                if component in tests:
+                    tests[component][sub_component].append(test_name)
+                else:
+                    tests[component] = {}
+                    tests[component][sub_component] = [test_name]
+
+        # combine tests by components[subcomponent]
+        for component in tests:
+            for sub_component in tests[component]:
+                val = tests[component][sub_component]
+                conf = "%s_%s.conf" % (component, sub_component)
+                rows.append({
+                    'confFile': conf,
+                    'component': component,
+                    'subcomponent': sub_component,
+                    'tests': val,
+                    'type': 'mobile'})
         return rows
 
     def update_test_bucket(self, conf_info):
