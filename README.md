@@ -22,14 +22,14 @@ FROM `history`
 WHERE ts >= '2017-01-09' AND ts <= '2017-01-15'  
 GROUP BY component
  
---- how many tests were added to across the different QE teams last week? ---
+--- how many tests were added across all the QE teams last week? ---
 SELECT SUM(ARRAY_LENGTH(new)) AS t_new, type
 FROM `history`
 WHERE ts >= '2017-01-09' AND ts <= '2017-01-15'  
 GROUP BY type
 
 --- show me a detail view of all changes that happened on a certain day ---
-SELECT * FROM `history` WHERE ts == '2016-12-15'
+SELECT * FROM `history` WHERE ts == '2017-01-13'
 
 --- when was build 4.6.0-3572 released? ---
 SELECT ts from `builds` b USE KEYS '4.6.0-3572'
