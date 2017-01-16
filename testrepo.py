@@ -19,6 +19,7 @@ from couchbase.exceptions import NotFoundError, CouchbaseNetworkError
 FUNCTIONAL_TEST_TYPE = "functional"
 PERFORMANCE_TEST_TYPE = "performance"
 MOBILE_TEST_TYPE = "mobile"
+SYSTEM_TEST_TYPE = "system"
 
 def main():
     """
@@ -47,7 +48,8 @@ def main():
         args.qe_bucket)
 
     # run repo manager against test types
-    test_types = [FUNCTIONAL_TEST_TYPE, PERFORMANCE_TEST_TYPE, MOBILE_TEST_TYPE]
+    test_types = [FUNCTIONAL_TEST_TYPE, PERFORMANCE_TEST_TYPE, MOBILE_TEST_TYPE, SYSTEM_TEST_TYPE]
+
     for test_type in test_types:
 
         print "===== %s =====" % test_type
@@ -87,6 +89,8 @@ class TestRepoManager(object):
             return self.get_perfomance_tests()
         if test_type == MOBILE_TEST_TYPE:
             return self.get_mobile_tests()
+        if test_type == SYSTEM_TEST_TYPE:
+            return self.get_system_tests()
 
     def get_functional_tests(self):
         """
@@ -181,6 +185,39 @@ class TestRepoManager(object):
                     'tests': val,
                     'type': 'mobile'})
         return rows
+
+    def get_system_tests(self):
+        """
+        walk the sequoia directory and retrieve tests files
+        """
+        rows = []
+        tests = {}
+        root_dir = "sequoia/tests"
+        for current_dir, _, files in os.walk(root_dir):
+            for conf in files:
+                match_str = re.search('^test_.*.yml$', conf)
+                if match_str is not None:
+                    component = os.path.basename(current_dir)
+                    sub_component = "system"
+                    if component in tests:
+                        tests[component][sub_component].append(conf)
+                    else:
+                        tests[component] = {}
+                        tests[component][sub_component] = [conf]
+
+        # combine tests by components[subcomponent]
+        for component in tests:
+            for sub_component in tests[component]:
+                val = tests[component][sub_component]
+                conf = "%s_%s.conf" % (component, sub_component)
+                rows.append({
+                    'confFile': conf,
+                    'component': component,
+                    'subcomponent': sub_component,
+                    'tests': val,
+                    'type': 'system'})
+        return rows
+
 
     def update_test_bucket(self, conf_info):
         """
