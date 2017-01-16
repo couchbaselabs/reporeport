@@ -4,3 +4,6 @@
 [submodule "perfrunner"]
 	path = perfrunner
 	url = https://github.com/couchbase/perfrunner
+[submodule "mobile-testkit"]
+	path = mobile-testkit
+	url = https://github.com/couchbaselabs/mobile-testkit
