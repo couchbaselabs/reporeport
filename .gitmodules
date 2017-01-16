@@ -1,0 +1,6 @@
+[submodule "testrunner"]
+	path = testrunner
+	url = https://github.com/couchbase/testrunner
+[submodule "perfrunner"]
+	path = perfrunner
+	url = https://github.com/couchbase/perfrunner
