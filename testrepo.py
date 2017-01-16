@@ -39,6 +39,11 @@ def main():
         '-repo_cluster',
         type=str,
         help='couchbae node for test repo data')
+    parser.add_argument(
+        '-sync_only',
+        type=bool,
+        default=False,
+        help='only sync couchbase with tests from repositories')
 
     args = parser.parse_args()
 
@@ -57,8 +62,9 @@ def main():
         # get test config files for all tests
         conf_info = repo_manager.get_conf_files(test_type)
 
-        # create history docs for today
-        repo_manager.update_history_bucket(conf_info)
+        # create history docs to record changes
+        if args.sync_only == False:
+            repo_manager.update_history_bucket(conf_info)
 
         # push update conf file with latest changes
         repo_manager.update_test_bucket(conf_info)
