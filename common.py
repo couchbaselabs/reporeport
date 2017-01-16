@@ -16,7 +16,7 @@ class Generics(object):
             filename  -- conf file
         """
 
-        filename = "../%s" % filename
+        filename = "testrunner/conf/%s" % filename
         if filename:
             if os.path.exists(filename):
                 return file(filename)

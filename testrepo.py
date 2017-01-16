@@ -37,19 +37,13 @@ def main():
         '-repo_cluster',
         type=str,
         help='couchbae node for test repo data')
-    parser.add_argument(
-        '-perf_repo_dir',
-        type=str,
-        default="perfrunner",
-        help='path to perfrunner repo')
 
     args = parser.parse_args()
 
     repo_manager = TestRepoManager(
         args.repo_cluster,
         args.qe_cluster,
-        args.qe_bucket,
-        args.perf_repo_dir)
+        args.qe_bucket)
 
     # run repo manager against test types
     test_types = [FUNCTIONAL_TEST_TYPE, PERFORMANCE_TEST_TYPE]
@@ -73,11 +67,10 @@ class TestRepoManager(object):
     and updates source repo bucket
     """
 
-    def __init__(self, repo_cluster, qe_cluster, qe_bucket, perf_repo_dir):
+    def __init__(self, repo_cluster, qe_cluster, qe_bucket):
         self.repo_cluster = repo_cluster
         self.qe_cluster = qe_cluster
         self.qe_bucket = qe_bucket
-        self.perf_repo_dir = perf_repo_dir
         self.conf_history = []
 
     def get_conf_files(self, test_type):
@@ -117,7 +110,7 @@ class TestRepoManager(object):
         """
         rows = []
         tests = {}
-        root_dir = "%s/tests" % self.perf_repo_dir
+        root_dir = "perfrunner/tests"
         for _, _, files in os.walk(root_dir):
             for conf in files:
                 match_str = re.search('.*.test$', conf)
