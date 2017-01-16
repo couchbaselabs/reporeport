@@ -4,6 +4,7 @@
 import os
 import re
 import time
+import subprocess
 
 class Generics(object):
     """ Generic static methods for use in tools"""
@@ -152,3 +153,16 @@ class Generics(object):
         """
         ts_now = time.time()
         return "%d" % ts_now
+
+    @staticmethod
+    def generate_mobile_conf():
+        """
+            runs script to generate the mobile.conf
+            file from tests within mobile-test-ket
+        """
+        output_file = "mobile.conf"
+        rc = subprocess.call("scripts/mobile_dump.sh")
+        if rc != 0:
+            print "Error occured generating mobile.conf file"
+
+        return output_file

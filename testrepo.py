@@ -18,6 +18,7 @@ from couchbase.exceptions import NotFoundError, CouchbaseNetworkError
 
 FUNCTIONAL_TEST_TYPE = "functional"
 PERFORMANCE_TEST_TYPE = "performance"
+MOBILE_TEST_TYPE = "mobile"
 
 def main():
     """
@@ -46,7 +47,7 @@ def main():
         args.qe_bucket)
 
     # run repo manager against test types
-    test_types = [FUNCTIONAL_TEST_TYPE, PERFORMANCE_TEST_TYPE]
+    test_types = [FUNCTIONAL_TEST_TYPE, PERFORMANCE_TEST_TYPE, MOBILE_TEST_TYPE]
     for test_type in test_types:
 
         print "===== %s =====" % test_type
@@ -84,6 +85,8 @@ class TestRepoManager(object):
             return self.get_functional_tests()
         if test_type == PERFORMANCE_TEST_TYPE:
             return self.get_perfomance_tests()
+        if test_type == MOBILE_TEST_TYPE:
+            return self.get_mobile_tests()
 
     def get_functional_tests(self):
         """
@@ -102,6 +105,41 @@ class TestRepoManager(object):
         for row in bucket.n1ql_query(query):
             row['type'] = 'functional'
             rows.append(row)
+        return rows
+
+    def get_mobile_tests(self):
+        """
+        parse the mobile conf file for tests
+        """
+
+        rows = []
+        tests = {}
+        filename = CG.generate_mobile_conf()
+        if os.path.exists(filename):
+            mobile_conf_file = file(filename)
+            for line in mobile_conf_file:
+                parts = line.split(":")
+                component = parts[0]
+                test_name = parts[1]
+                sub_component = "mobile"
+
+                if component in tests:
+                    tests[component][sub_component].append(test_name)
+                else:
+                    tests[component] = {}
+                    tests[component][sub_component] = [test_name]
+
+        # combine tests by components[subcomponent]
+        for component in tests:
+            for sub_component in tests[component]:
+                val = tests[component][sub_component]
+                conf = "%s_%s.conf" % (component, sub_component)
+                rows.append({
+                    'confFile': conf,
+                    'component': component,
+                    'subcomponent': sub_component,
+                    'tests': val,
+                    'type': 'mobile'})
         return rows
 
     def get_perfomance_tests(self):
