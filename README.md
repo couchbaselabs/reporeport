@@ -12,8 +12,9 @@ python testrepo.py -qe_cluster 172.23.105.177:8091 -repo_cluster 172.23.99.54:80
 
 Allows for the following query scenarios
 ```sql
---- what are all changes happened today ---
-SELECT * FROM `history` WHERE ts == '2016-12-15'
+
+--- how many total tests are there in all QE repositories ---
+SELECT sum(array_length (tests)),type FROM `conf` GROUP BY type
  
 --- how many new tests added today ---
 SELECT SUM(ARRAY_LENGTH(new)) AS t_new, component
@@ -25,7 +26,10 @@ SELECT SUM(ARRAY_LENGTH(new)) AS t_new, component
 FROM `history`
 WHERE ts == '2016-12-15' AND type=="functional"
 GROUP BY component
- 
+
+--- show me a detail view of all changes that happened today ---
+SELECT * FROM `history` WHERE ts == '2016-12-15'
+
 --- when was a build released ---
 SELECT ts from `builds` b USE KEYS '4.6.0-3552'
  
