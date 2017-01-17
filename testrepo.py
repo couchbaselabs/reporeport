@@ -176,6 +176,9 @@ class TestRepoManager(object):
         if os.path.exists(filename):
             mobile_conf_file = file(filename)
             for line in mobile_conf_file:
+                line = line.rstrip()
+                if len(line) == 0:
+                    continue
                 parts = line.split(":")
                 component = parts[0]
                 test_name = parts[1]
