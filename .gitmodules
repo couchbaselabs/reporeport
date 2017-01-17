@@ -10,3 +10,6 @@
 [submodule "sequoia"]
 	path = sequoia
 	url = https://github.com/couchbaselabs/sequoia
+[submodule "sdkdclient-ng"]
+	path = sdkdclient-ng
+	url = git@github.com:couchbaselabs/sdkdclient-ng
