@@ -166,3 +166,16 @@ class Generics(object):
             print "Error occured generating mobile.conf file"
 
         return output_file
+
+    @staticmethod
+    def generate_sdk_conf():
+        """
+            runs script to generate the sdk.conf
+            file from tests within sdkclient-ng
+        """
+        output_file = "sdk.conf"
+        rc = subprocess.call("scripts/sdk_dump.sh")
+        if rc != 0:
+            print "Error occured generating sdk.conf file"
+
+        return output_file
