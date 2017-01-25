@@ -138,16 +138,9 @@ class TestRepoManager(object):
                 if match_str is not None:
                     parts = conf.split("_")
                     component = parts[0]
-                    sub_component = component
-                    if len(parts) > 1:
-                        if not parts[1][0].isdigit():
-                            match_str = re.split('[0-9]', parts[1])
-                            sub_component = match_str[0]
+                    sub_component = "none"
                     if component in tests:
-                        if sub_component in tests[component]:
-                            tests[component][sub_component].append(conf)
-                        else:
-                            tests[component][sub_component] = [conf]
+                        tests[component][sub_component].append(conf)
                     else:
                         tests[component] = {}
                         tests[component][sub_component] = [conf]
