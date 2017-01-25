@@ -185,7 +185,11 @@ class Generics(object):
     def get_perf_component(ini_file):
         component = None
         config = configparser.ConfigParser()
-        config.read(ini_file)
+        try:
+            config.read(ini_file)
+        except configparser.DuplicateSectionError as ex:
+            print ex
+            return component
 
         if config.has_section('test_case'):
             if config.has_option('test_case', 'component'):
