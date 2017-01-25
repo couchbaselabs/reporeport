@@ -132,12 +132,16 @@ class TestRepoManager(object):
         rows = []
         tests = {}
         root_dir = "perfrunner/tests"
-        for _, _, files in os.walk(root_dir):
+        for conf_dir, _, files in os.walk(root_dir):
             for conf in files:
                 match_str = re.search('.*.test$', conf)
                 if match_str is not None:
-                    parts = conf.split("_")
-                    component = parts[0]
+                    ini_component = CG.get_perf_component("%s/%s" % (conf_dir, conf))
+                    if ini_component is not None:
+                        component = ini_component
+                    else:
+                        parts = conf.split("_")
+                        component = parts[0]
                     sub_component = "none"
                     if component in tests:
                         tests[component][sub_component].append(conf)

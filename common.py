@@ -5,6 +5,7 @@ import os
 import re
 import time
 import subprocess
+import configparser
 
 class Generics(object):
     """ Generic static methods for use in tools"""
@@ -179,3 +180,16 @@ class Generics(object):
             print "Error occured generating sdk.conf file"
 
         return output_file
+
+    @staticmethod
+    def get_perf_component(ini_file):
+        component = None
+        config = configparser.ConfigParser()
+        config.read(ini_file)
+
+        if config.has_section('test_case'):
+            if config.has_option('test_case', 'component'):
+                component = config.get('test_case', 'component')
+                component = component.lower()
+
+        return component
