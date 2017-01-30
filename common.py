@@ -187,7 +187,7 @@ class Generics(object):
         config = configparser.ConfigParser()
         try:
             config.read(ini_file)
-        except configparser.DuplicateSectionError as ex:
+        except Exception as ex:
             print ex
             return component
 
