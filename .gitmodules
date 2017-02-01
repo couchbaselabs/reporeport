@@ -13,3 +13,6 @@
 [submodule "sdkdclient-ng"]
 	path = sdkdclient-ng
 	url = git@github.com:couchbaselabs/sdkdclient-ng
+[submodule "pydcp"]
+	path = pydcp
+	url = https://github.com/couchbaselabs/pydcp
