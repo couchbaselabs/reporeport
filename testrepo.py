@@ -309,7 +309,7 @@ class TestRepoManager(object):
                     'component': component,
                     'subcomponent': sub_component,
                     'tests': val,
-                    'type': 'dcp'})
+                    'type': 'dcp_standalone_client'})
         return rows
 
 
