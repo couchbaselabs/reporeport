@@ -182,6 +182,19 @@ class Generics(object):
         return output_file
 
     @staticmethod
+    def generate_pydcp_conf():
+        """
+            runs script to generate the pydcp.conf
+            file from tests within the pydcp repo
+        """
+        output_file = "pydcp.conf"
+        rc = subprocess.call("scripts/pydcp_dump.sh")
+        if rc != 0:
+            print "Error occured generating pydcp.conf file"
+
+        return output_file
+
+    @staticmethod
     def get_perf_component(ini_file):
         component = None
         config = configparser.ConfigParser()

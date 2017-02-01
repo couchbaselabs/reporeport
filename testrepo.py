@@ -21,6 +21,7 @@ PERFORMANCE_TEST_TYPE = "performance"
 MOBILE_TEST_TYPE = "mobile"
 SYSTEM_TEST_TYPE = "system"
 SDK_TEST_TYPE = "sdk"
+PYDCP_TEST_TYPE = "pydcp"
 
 def main():
     """
@@ -59,7 +60,8 @@ def main():
         PERFORMANCE_TEST_TYPE,
         MOBILE_TEST_TYPE,
         SYSTEM_TEST_TYPE,
-        SDK_TEST_TYPE]
+        SDK_TEST_TYPE,
+        PYDCP_TEST_TYPE]
 
     for test_type in test_types:
 
@@ -105,6 +107,8 @@ class TestRepoManager(object):
             return self.get_system_tests()
         if test_type == SDK_TEST_TYPE:
             return self.get_sdk_tests()
+        if test_type == PYDCP_TEST_TYPE:
+            return self.get_pydcp_tests()
 
     def get_functional_tests(self):
         """
@@ -268,6 +272,44 @@ class TestRepoManager(object):
                     'subcomponent': sub_component,
                     'tests': val,
                     'type': 'sdk'})
+        return rows
+
+    def get_pydcp_tests(self):
+        """
+        parse the pydcp conf file for tests
+        """
+
+        rows = []
+        tests = {}
+        filename = CG.generate_pydcp_conf()
+        if os.path.exists(filename):
+            sdk_conf_file = file(filename)
+            for line in sdk_conf_file:
+                line = line.rstrip()
+                if len(line) == 0:
+                    continue
+                parts = line.split(":")
+                component = parts[0]
+                test_name = parts[1]
+                sub_component = "none"
+
+                if component in tests:
+                    tests[component][sub_component].append(test_name)
+                else:
+                    tests[component] = {}
+                    tests[component][sub_component] = [test_name]
+
+        # combine tests by components[subcomponent]
+        for component in tests:
+            for sub_component in tests[component]:
+                val = tests[component][sub_component]
+                conf = "%s_%s.conf" % (component, sub_component)
+                rows.append({
+                    'confFile': conf,
+                    'component': component,
+                    'subcomponent': sub_component,
+                    'tests': val,
+                    'type': 'dcp'})
         return rows
 
 
