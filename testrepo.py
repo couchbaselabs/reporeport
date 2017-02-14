@@ -488,6 +488,7 @@ class TestRepoManager(object):
                         total_changed += curr_changed
             else:
                 # handle brand new conf
+                history_bucket.upsert(key, change_doc)
                 return
 
         print "New: %d, Removed: %d, Changed: %d" % (
