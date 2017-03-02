@@ -364,132 +364,131 @@ class TestRepoManager(object):
             conf = CG.rm_leading_slash(conf)
             doc = self.safe_get_doc(test_bucket, conf)
 
-            # get last known status of tests for this conf
-            if doc is not None and doc.rc == 0:
-                cb_tests = doc.value.get('tests')
-                if cb_tests is not None:
-                    repo_tests = info.get('tests', None)
-                    if repo_tests is None:
-                        repo_tests = [str(t) for t in CG.parse_conf_file(conf)]
-
-                    # array comparison
-                    if cb_tests == repo_tests:
-                        continue # same same
-
-                    curr_new = curr_removed = curr_changed = 0
-                    change_doc = {'ts': timestamp,
-                                  'new': [],
-                                  'removed': [],
-                                  'changed': [],
-                                  'component': component,
-                                  'subcomponent': subcomponent,
-                                  'type': test_type,
-                                  'conf': conf}
-
-                    # detect new/removed tests
-                    base_repo_tests = CG.split_test_base(repo_tests)
-                    base_cb_tests = CG.split_test_base(cb_tests)
-                    new_tests = set(base_repo_tests) - set(base_cb_tests)
-                    removed_tests = set(base_cb_tests) - set(base_repo_tests)
-
-                    # record which test changed
-                    for test in new_tests:
-                        # get params
-                        params_index = base_repo_tests.index(test)
-                        param_parts = repo_tests[params_index].split(",")
-                        params = ""
-                        if len(param_parts) > 1:
-                            params = ",%s" % param_parts[1]
-                        test = "%s%s" % (test, params)
-                        print "[new] %s" % test
-                        change_doc['new'].append(test)
-                        curr_new += 1
-
-                    for test in removed_tests:
-                        # get params
-                        params_index = base_cb_tests.index(test)
-                        param_parts = cb_tests[params_index].split(",")
-                        params = ""
-                        if len(param_parts) > 1:
-                            params = ",%s" % param_parts[1]
-                        test = "%s%s" % (test, params)
-                        print "[removed] %s" % test
-                        change_doc['removed'].append(test)
-                        curr_removed += 1
-
-                    # detect param changes
-                    base_repo_params = [CG.parse_params(t) for t in repo_tests]
-                    base_cb_params = [CG.parse_params(t) for t in cb_tests]
-                    changed_params = set(base_repo_params) - set(base_cb_params)
-
-                    # record which params changed
-                    #     as determined by params in which
-                    #     no params have been added or removed
-                    for params in changed_params:
-
-                        # given the set comparison
-                        # the change will be in base_repo_params
-                        change_index = base_repo_params.index(params)
-                        changed_test = base_repo_tests[change_index]
-
-                        # check if test already processed
-                        if  changed_test in list(new_tests):
-                            continue # already processed as new
-                        if  changed_test in list(removed_tests):
-                            continue # already processed as removed
-
-                        # get original test info and params
-                        original_test_index = base_cb_tests.index(changed_test)
-                        original_test = cb_tests[original_test_index]
-                        original_params = CG.parse_params(original_test)
-
-                        # determine if real change or is just an add
-                        original_params_keys = set(
-                            CG.split_test_param_keys(original_params))
-                        changed_params_keys = set(
-                            CG.split_test_param_keys(params))
-
-                        if original_params_keys != changed_params_keys:
-                            test_new = "%s,%s" % (changed_test, params)
-                            print "[new] %s" % test_new
-                            change_doc['new'].append(test_new)
-                            curr_new += 1
-                            continue
-
-                        # detect which value param actually changed
-                        original_params_kv = CG.split_test_params(original_params)
-                        changed_params_kv = CG.split_test_params(params)
-
-                        to_diff_params = set(original_params_kv) - set(changed_params_kv)
-                        from_diff_params = set(changed_params_kv) - set(original_params_kv)
-
-                        # eval diff
-                        param_to_str = ",".join(list(to_diff_params))
-                        param_from_str = ",".join(list(from_diff_params))
-
-                        print "[change] %s:  (%s) -> (%s)" % (
-                            changed_test,
-                            param_to_str,
-                            param_from_str)
-                        change_doc['changed'].append(
-                            {'test': changed_test,
-                             'to': param_to_str,
-                             'from': param_from_str})
-                        curr_changed += 1
-
-                    curr_total = curr_new + curr_removed + curr_changed
-                    if  curr_total > 0:
-                        # push change
-                        timestamp_sec = CG.timestamp_sec()
-                        key = "%s:%s_%s" % (component, subcomponent, timestamp_sec)
-                        history_bucket.upsert(key, change_doc)
-                        total_new += curr_new
-                        total_removed += curr_removed
-                        total_changed += curr_changed
+            if doc is None:
+                cb_tests = []
             else:
-                # handle brand new conf
-                history_bucket.upsert(key, change_doc)
-                return
+                cb_tests = doc.value.get('tests')
+
+            # get last known status of tests for this conf
+            if cb_tests is not None:
+                repo_tests = info.get('tests', None)
+                if repo_tests is None:
+                    repo_tests = [str(t) for t in CG.parse_conf_file(conf)]
+
+                # array comparison
+                if cb_tests == repo_tests:
+                    continue # same same
+
+                curr_new = curr_removed = curr_changed = 0
+                change_doc = {'ts': timestamp,
+                              'new': [],
+                              'removed': [],
+                              'changed': [],
+                              'component': component,
+                              'subcomponent': subcomponent,
+                              'type': test_type,
+                              'conf': conf}
+
+                # detect new/removed tests
+                base_repo_tests = CG.split_test_base(repo_tests)
+                base_cb_tests = CG.split_test_base(cb_tests)
+                new_tests = set(base_repo_tests) - set(base_cb_tests)
+                removed_tests = set(base_cb_tests) - set(base_repo_tests)
+
+                # record which test changed
+                for test in new_tests:
+                    # get params
+                    params_index = base_repo_tests.index(test)
+                    param_parts = repo_tests[params_index].split(",")
+                    params = ""
+                    if len(param_parts) > 1:
+                        params = ",%s" % param_parts[1]
+                    test = "%s%s" % (test, params)
+                    print "[new] %s" % test
+                    change_doc['new'].append(test)
+                    curr_new += 1
+
+                for test in removed_tests:
+                    # get params
+                    params_index = base_cb_tests.index(test)
+                    param_parts = cb_tests[params_index].split(",")
+                    params = ""
+                    if len(param_parts) > 1:
+                        params = ",%s" % param_parts[1]
+                    test = "%s%s" % (test, params)
+                    print "[removed] %s" % test
+                    change_doc['removed'].append(test)
+                    curr_removed += 1
+
+                # detect param changes
+                base_repo_params = [CG.parse_params(t) for t in repo_tests]
+                base_cb_params = [CG.parse_params(t) for t in cb_tests]
+                changed_params = set(base_repo_params) - set(base_cb_params)
+
+                # record which params changed
+                #     as determined by params in which
+                #     no params have been added or removed
+                for params in changed_params:
+
+                    # given the set comparison
+                    # the change will be in base_repo_params
+                    change_index = base_repo_params.index(params)
+                    changed_test = base_repo_tests[change_index]
+
+                    # check if test already processed
+                    if  changed_test in list(new_tests):
+                        continue # already processed as new
+                    if  changed_test in list(removed_tests):
+                        continue # already processed as removed
+
+                    # get original test info and params
+                    original_test_index = base_cb_tests.index(changed_test)
+                    original_test = cb_tests[original_test_index]
+                    original_params = CG.parse_params(original_test)
+
+                    # determine if real change or is just an add
+                    original_params_keys = set(
+                        CG.split_test_param_keys(original_params))
+                    changed_params_keys = set(
+                        CG.split_test_param_keys(params))
+
+                    if original_params_keys != changed_params_keys:
+                        test_new = "%s,%s" % (changed_test, params)
+                        print "[new] %s" % test_new
+                        change_doc['new'].append(test_new)
+                        curr_new += 1
+                        continue
+
+                    # detect which value param actually changed
+                    original_params_kv = CG.split_test_params(original_params)
+                    changed_params_kv = CG.split_test_params(params)
+
+                    to_diff_params = set(original_params_kv) - set(changed_params_kv)
+                    from_diff_params = set(changed_params_kv) - set(original_params_kv)
+
+                    # eval diff
+                    param_to_str = ",".join(list(to_diff_params))
+                    param_from_str = ",".join(list(from_diff_params))
+
+                    print "[change] %s:  (%s) -> (%s)" % (
+                        changed_test,
+                        param_to_str,
+                        param_from_str)
+                    change_doc['changed'].append(
+                        {'test': changed_test,
+                         'to': param_to_str,
+                         'from': param_from_str})
+                    curr_changed += 1
+
+                curr_total = curr_new + curr_removed + curr_changed
+                if  curr_total > 0:
+                    # push change
+                    timestamp_sec = CG.timestamp_sec()
+                    key = "%s:%s_%s" % (component, subcomponent, timestamp_sec)
+                    history_bucket.upsert(key, change_doc)
+                    total_new += curr_new
+                    total_removed += curr_removed
+                    total_changed += curr_changed
 
         print "New: %d, Removed: %d, Changed: %d" % (
             total_new,
@@ -508,9 +507,10 @@ class TestRepoManager(object):
         try:
             doc = bucket.get(key)
         except NotFoundError:
-            print "ERROR: doc not found: %s" % key
-        except CouchbaseNetworkError:
+            print "New document added: %s" % key
+        except CouchbaseNetworkError as er:
             print "unable to connect to host %s" % self.repo_cluster
+            raise er
         return doc
 
 if __name__ == "__main__":
