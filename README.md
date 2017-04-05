@@ -6,7 +6,7 @@ Test Repo
 testrepo.py test repo statistic generation
 
 ```bash
-git submodule update --init --recursive
+git submodule foreach git pull origin master
 python testrepo.py -qe_cluster 172.23.105.177:8091 -repo_cluster 172.23.99.54:8091
 ```
 
